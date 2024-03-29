@@ -1,0 +1,9 @@
+Flask
+joblib
+librosa
+numpy
+pandas
+python-dotenv
+requests
+xgboost
+gunicorn
