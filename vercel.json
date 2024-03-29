@@ -3,8 +3,8 @@
     "builds": [
         {
             "src":"./index.py",
-            "use": "@vercel/python",
-            "config":{"runtime":"python3.8"}
+            "use": "@natanffs/vercel-python-wsgi",
+            "config": { "maxLambdaSize": "15mb", "runtime": "python3.9" }
         }
     ],
     "routes": [
