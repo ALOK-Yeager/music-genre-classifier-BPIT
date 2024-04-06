@@ -2,7 +2,7 @@
     "version": 2,
     "builds": [
         {
-            "src": "./index.py",
+            "src": "index.py",
             "use": "@natanffs/vercel-python-wsgi",
             "config": { "maxLambdaSize": "15mb", "runtime": "python3.9" }
         }
