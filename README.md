@@ -121,4 +121,4 @@ For any questions or feedback, please reach out to [alokitmishra9899@gmail.com](
 
 ---
 
-*Note: This project was developed as part of coursework at BPIT.*
+## *Note: This project was developed as part of coursework at BPIT.*
