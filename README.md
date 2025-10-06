@@ -172,14 +172,14 @@ python -c "import torch; import streamlit; import librosa; print('✅ All packag
 
 ## 🎓 Training the Model
 
-### Quick Training (3 epochs, 1000 samples)
+### Quick Training (12 epochs, 1000 samples)
 ```bash
 python train.py
 ```
 
 This will:
 - Download the ccmusic-database/music_genre dataset
-- Train ResNet18 for 3 epochs
+- Train ResNet18 for 12 epochs on CPU
 - Save model checkpoints:
   - `genre_model.pth` (final model)
   - `genre_model_best.pth` (best validation accuracy)
@@ -187,18 +187,29 @@ This will:
 
 ### Training Configuration
 ```python
-BATCH_SIZE = 16
-NUM_EPOCHS = 3
+BATCH_SIZE = 32
+NUM_EPOCHS = 12
 LEARNING_RATE = 0.001
 MAX_TRAIN_SAMPLES = 1000
 MAX_VAL_SAMPLES = 200
 ```
 
 ### Expected Training Time
-- **CPU**: ~30 minutes
-- **GPU**: ~10 minutes
+- **CPU**: ~60-90 minutes
 
-### Training Output
+---
+
+## ⚙️ GPU Diagnostics
+
+Before launching longer training runs, you can verify whether PyTorch detects a CUDA-capable GPU without interrupting any active jobs.
+
+```
+python check_gpu.py
+# Optional: include live utilization data when `nvidia-smi` is available
+python check_gpu.py --nvidia-smi
+```
+
+The script reports the PyTorch build and device information.### Training Output
 ```
 ============================================================
 Training Complete!

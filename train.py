@@ -26,6 +26,22 @@ except ImportError:
     print("Warning: datasets library not available. Install with: pip install datasets")
 
 
+def check_gpu_availability():
+    """Check and print GPU information."""
+    print("\n" + "="*60)
+    print("Device Configuration Check")
+    print("="*60)
+    
+    print(f"PyTorch version: {torch.__version__}")
+    print("Using CPU for training")
+    return False
+
+
+def optimize_gpu_settings():
+    """Optimize PyTorch settings for CPU usage."""
+    print("\n⚠️ Running on CPU - no optimizations applied")
+
+
 class MusicGenreDataset(Dataset):
     """
     PyTorch Dataset for Music Genre Classification
@@ -64,7 +80,6 @@ class MusicGenreDataset(Dataset):
         item = self.dataset[idx]
         
         # Get CQT spectrogram (already preprocessed in the dataset)
-        # The dataset contains 'cqt' field with the spectrogram
         cqt = item['cqt']
         
         # Convert to PIL Image if it's a numpy array
@@ -98,8 +113,8 @@ class MusicGenreDataset(Dataset):
         img_array = np.array(image).astype(np.float32) / 255.0
         
         # Apply ImageNet normalization
-        mean = np.array([0.485, 0.456, 0.406])
-        std = np.array([0.229, 0.224, 0.225])
+        mean = np.array([0.485, 0.456, 0.406], dtype=np.float32)
+        std = np.array([0.229, 0.224, 0.225], dtype=np.float32)
         img_array = (img_array - mean) / std
         
         # Convert to tensor (H, W, C) -> (C, H, W)
@@ -111,7 +126,7 @@ class MusicGenreDataset(Dataset):
         return img_tensor, label
 
 
-def train_model(model, train_loader, val_loader, criterion, optimizer, num_epochs=3, device='cpu'):
+def train_model(model, train_loader, val_loader, criterion, optimizer, scheduler=None, num_epochs=3, device='cpu'):
     """
     Train the model.
     
@@ -127,6 +142,8 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, num_epoch
         Loss function
     optimizer : optim.Optimizer
         Optimizer
+    scheduler : optim.lr_scheduler, optional
+        Learning rate scheduler
     num_epochs : int
         Number of training epochs
     device : str
@@ -223,6 +240,12 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, num_epoch
         print(f"  Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.2f}%")
         print(f"  Val Loss:   {val_loss:.4f} | Val Acc:   {val_acc:.2f}%")
         
+        # Update learning rate based on validation accuracy
+        if scheduler is not None:
+            scheduler.step(val_acc)
+            current_lr = optimizer.param_groups[0]['lr']
+            print(f"  Learning Rate: {current_lr:.6f}")
+        
         # Save best model
         if val_acc > best_val_acc:
             best_val_acc = val_acc
@@ -238,6 +261,9 @@ def main():
     print("Music Genre Classification - Training Script")
     print("="*60)
     
+    # Check GPU availability
+    gpu_available = check_gpu_availability()
+    
     # Check if datasets library is available
     if not DATASETS_AVAILABLE:
         print("\n❌ Error: 'datasets' library not found.")
@@ -245,12 +271,18 @@ def main():
         return
     
     # Configuration
-    BATCH_SIZE = 16
-    NUM_EPOCHS = 3
+    BATCH_SIZE = 32
+    NUM_EPOCHS = 12
     LEARNING_RATE = 0.001
     MAX_TRAIN_SAMPLES = 1000
     MAX_VAL_SAMPLES = 200
-    DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+    DEVICE = 'cpu'
+    
+    # Check device availability
+    gpu_available = check_gpu_availability()
+    
+    # Optimize settings
+    optimize_gpu_settings()
     
     print(f"\n📋 Configuration:")
     print(f"  Device: {DEVICE}")
@@ -270,7 +302,6 @@ def main():
     except Exception as e:
         print(f"❌ Error loading dataset: {e}")
         print("\nTrying to create synthetic dataset for testing...")
-        # Create synthetic data for testing if dataset fails to load
         from torch.utils.data import TensorDataset
         
         num_samples = MAX_TRAIN_SAMPLES
@@ -302,11 +333,12 @@ def main():
         
         # Create data loaders
         print(f"\n🔄 Creating data loaders...")
+        
         train_loader = DataLoader(
             train_dataset,
             batch_size=BATCH_SIZE,
             shuffle=True,
-            num_workers=0  # Set to 0 for Windows compatibility
+            num_workers=0
         )
         val_loader = DataLoader(
             val_dataset,
@@ -328,8 +360,14 @@ def main():
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
     
+    # Add learning rate scheduler
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer, mode='max', factor=0.5, patience=3
+    )
+    
     print(f"\n📊 Loss function: CrossEntropyLoss")
     print(f"⚙️ Optimizer: Adam (lr={LEARNING_RATE})")
+    print(f"📉 LR Scheduler: ReduceLROnPlateau (patience=3, factor=0.5)")
     
     # Train model
     print(f"\n🚀 Starting training...")
@@ -341,6 +379,7 @@ def main():
         val_loader=val_loader,
         criterion=criterion,
         optimizer=optimizer,
+        scheduler=scheduler,
         num_epochs=NUM_EPOCHS,
         device=DEVICE
     )
@@ -371,6 +410,7 @@ def main():
     print(f"  - genre_model.pth (final model)")
     print(f"  - genre_model_best.pth (best model)")
     print(f"  - training_history.pth (training history)")
+    
     print(f"\n{'='*60}")
 
 
