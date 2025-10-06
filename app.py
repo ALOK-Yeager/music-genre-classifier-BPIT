@@ -505,21 +505,21 @@ def render_home_tab() -> None:
 
 def render_about_tab() -> None:
     st.markdown(
-        '<a class="contact-button" href="mailto:alokit@example.com">✉️ Contact</a>',
+        '<a class="contact-button" href="mailto:alokitmishra9899@gmail.com">✉️ Contact</a>',
         unsafe_allow_html=True,
     )
     st.subheader("About")
-    st.write("**Author:** Alokit")
-    st.write("**Co-author:** <COAUTHOR_NAME>")
+    st.write("**Author:** Alokit Mishra")
+    st.write("**Co-author:** Ryyan Akhtar")
     st.write(
         "This app showcases fast, accurate music genre classification using deep learning and audio feature extraction. "
         "It pairs modern Python tooling with Streamlit to deliver an interactive, musician-friendly experience."
     )
     st.write(
-        "Find more on [GitHub](https://github.com/your-github) and "
-        "[LinkedIn](https://linkedin.com/in/your-linkedin)."
+        "Find more on [GitHub](https://github.com/ALOK-Yeager/music-genre-classifier-BPIT) and "
+        "[LinkedIn](https://linkedin.com/in/alokitmishra09/)."
     )
-    st.markdown("**Tech Stack:** Python, Streamlit, Librosa, PyTorch/Sklearn, Altair, NumPy, Pandas")
+    st.markdown("**Tech Stack:** Python, Streamlit, Librosa, PyTorch, Altair, NumPy, Pandas")
 
 def render_model_card_tab() -> None:
     st.subheader("Model Card")
